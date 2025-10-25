@@ -111,7 +111,7 @@ fun AddProductScreen(
             
             Spacer(modifier = Modifier.height(24.dp))
             
-            HorizontalDivider()
+            Divider()
             
             Spacer(modifier = Modifier.height(16.dp))
             
@@ -132,7 +132,7 @@ fun AddProductScreen(
             
             Spacer(modifier = Modifier.height(24.dp))
             
-            HorizontalDivider()
+            Divider()
             
             Spacer(modifier = Modifier.height(16.dp))
             
