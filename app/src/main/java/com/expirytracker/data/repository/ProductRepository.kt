@@ -17,12 +17,11 @@ class ProductRepository(
     suspend fun addProduct(product: ProductEntity): Long {
         val productId = productDao.insertProduct(product)
         
-        val reminderMinutes = product.reminderDaysBefore * 24 * 60
         val eventId = CalendarHelper.addEventToCalendar(
             context,
             product.name,
             product.expiryDate,
-            reminderMinutes,
+            product.reminderDaysBefore,
             product.reminderMethod
         )
         
@@ -39,12 +38,11 @@ class ProductRepository(
             CalendarHelper.deleteEventFromCalendar(context, eventId)
         }
         
-        val reminderMinutes = product.reminderDaysBefore * 24 * 60
         val newEventId = CalendarHelper.addEventToCalendar(
             context,
             product.name,
             product.expiryDate,
-            reminderMinutes,
+            product.reminderDaysBefore,
             product.reminderMethod
         )
         
