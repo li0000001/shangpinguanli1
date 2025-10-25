@@ -22,7 +22,8 @@ class ProductRepository(
             context,
             product.name,
             product.expiryDate,
-            reminderMinutes
+            reminderMinutes,
+            product.reminderMethod
         )
         
         if (eventId != null) {
@@ -43,7 +44,8 @@ class ProductRepository(
             context,
             product.name,
             product.expiryDate,
-            reminderMinutes
+            reminderMinutes,
+            product.reminderMethod
         )
         
         val updatedProduct = product.copy(calendarEventId = newEventId)

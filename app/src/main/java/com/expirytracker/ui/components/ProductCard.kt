@@ -23,6 +23,7 @@ import com.expirytracker.utils.ExpiryStatus
 fun ProductCard(
     product: ProductEntity,
     onDelete: () -> Unit,
+    onEdit: () -> Unit,
     modifier: Modifier = Modifier
 ) {
     val status = DateUtils.getExpiryStatus(product.expiryDate)
@@ -50,7 +51,8 @@ fun ProductCard(
             .padding(horizontal = 16.dp, vertical = 8.dp),
         elevation = CardDefaults.cardElevation(defaultElevation = 4.dp),
         shape = RoundedCornerShape(16.dp),
-        colors = CardDefaults.cardColors(containerColor = Color.White)
+        colors = CardDefaults.cardColors(containerColor = Color.White),
+        onClick = onEdit
     ) {
         Row(
             modifier = Modifier

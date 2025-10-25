@@ -53,7 +53,8 @@ fun ExpiryTrackerNavigation() {
         composable("product_list") {
             ProductListScreen(
                 viewModel = viewModel,
-                onAddProduct = { navController.navigate("add_product") }
+                onAddProduct = { navController.navigate("add_product") },
+                onEditProduct = { productId -> navController.navigate("edit_product/$productId") }
             )
         }
         
@@ -61,6 +62,15 @@ fun ExpiryTrackerNavigation() {
             AddProductScreen(
                 viewModel = viewModel,
                 onNavigateBack = { navController.popBackStack() }
+            )
+        }
+        
+        composable("edit_product/{productId}") { backStackEntry ->
+            val productId = backStackEntry.arguments?.getString("productId")?.toLongOrNull()
+            AddProductScreen(
+                viewModel = viewModel,
+                onNavigateBack = { navController.popBackStack() },
+                productId = productId
             )
         }
     }

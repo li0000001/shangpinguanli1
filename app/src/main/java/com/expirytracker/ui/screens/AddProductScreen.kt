@@ -5,7 +5,9 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Alarm
 import androidx.compose.material.icons.filled.ArrowBack
+import androidx.compose.material.icons.filled.Notifications
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
@@ -20,13 +22,18 @@ import com.expirytracker.viewmodel.ProductViewModel
 @Composable
 fun AddProductScreen(
     viewModel: ProductViewModel,
-    onNavigateBack: () -> Unit
+    onNavigateBack: () -> Unit,
+    productId: Long? = null
 ) {
-    var productName by remember { mutableStateOf("") }
-    var productionDate by remember { mutableStateOf<Long?>(null) }
-    var shelfLifeDays by remember { mutableStateOf("") }
-    var expiryDate by remember { mutableStateOf<Long?>(null) }
-    var reminderDaysBefore by remember { mutableStateOf("3") }
+    val products by viewModel.products.collectAsState()
+    val existingProduct = productId?.let { id -> products.find { it.id == id } }
+    
+    var productName by remember { mutableStateOf(existingProduct?.name ?: "") }
+    var productionDate by remember { mutableStateOf(existingProduct?.productionDate) }
+    var shelfLifeDays by remember { mutableStateOf(existingProduct?.shelfLifeDays?.toString() ?: "") }
+    var expiryDate by remember { mutableStateOf<Long?>(existingProduct?.expiryDate) }
+    var reminderDaysBefore by remember { mutableStateOf(existingProduct?.reminderDaysBefore?.toString() ?: "3") }
+    var reminderMethod by remember { mutableStateOf(existingProduct?.reminderMethod ?: "ALARM") }
     var showError by remember { mutableStateOf(false) }
     var errorText by remember { mutableStateOf("") }
     
@@ -45,7 +52,7 @@ fun AddProductScreen(
             TopAppBar(
                 title = {
                     Text(
-                        "添加商品",
+                        if (productId != null) "编辑商品" else "添加商品",
                         fontWeight = FontWeight.Bold,
                         fontSize = 20.sp
                     )
@@ -154,6 +161,48 @@ fun AddProductScreen(
                 singleLine = true
             )
             
+            Spacer(modifier = Modifier.height(16.dp))
+            
+            Text(
+                text = "提醒方式",
+                style = MaterialTheme.typography.bodyMedium,
+                fontWeight = FontWeight.Medium
+            )
+            
+            Spacer(modifier = Modifier.height(8.dp))
+            
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.spacedBy(12.dp)
+            ) {
+                FilterChip(
+                    selected = reminderMethod == "ALARM",
+                    onClick = { reminderMethod = "ALARM" },
+                    label = { Text("闹钟提醒") },
+                    modifier = Modifier.weight(1f),
+                    leadingIcon = {
+                        Icon(
+                            imageVector = Icons.Default.Alarm,
+                            contentDescription = null,
+                            modifier = Modifier.size(18.dp)
+                        )
+                    }
+                )
+                FilterChip(
+                    selected = reminderMethod == "NOTIFICATION",
+                    onClick = { reminderMethod = "NOTIFICATION" },
+                    label = { Text("通知提醒") },
+                    modifier = Modifier.weight(1f),
+                    leadingIcon = {
+                        Icon(
+                            imageVector = Icons.Default.Notifications,
+                            contentDescription = null,
+                            modifier = Modifier.size(18.dp)
+                        )
+                    }
+                )
+            }
+            
             Spacer(modifier = Modifier.height(24.dp))
             
             Button(
@@ -172,13 +221,27 @@ fun AddProductScreen(
                             showError = true
                         }
                         else -> {
-                            viewModel.addProduct(
-                                name = productName,
-                                productionDate = productionDate,
-                                shelfLifeDays = shelfLifeDays.toIntOrNull(),
-                                expiryDate = expiryDate,
-                                reminderDaysBefore = reminderDaysBefore.toIntOrNull() ?: 3
-                            )
+                            if (productId != null && existingProduct != null) {
+                                viewModel.updateProductWithDetails(
+                                    id = productId,
+                                    name = productName,
+                                    productionDate = productionDate,
+                                    shelfLifeDays = shelfLifeDays.toIntOrNull(),
+                                    expiryDate = expiryDate,
+                                    reminderDaysBefore = reminderDaysBefore.toIntOrNull() ?: 3,
+                                    reminderMethod = reminderMethod,
+                                    calendarEventId = existingProduct.calendarEventId
+                                )
+                            } else {
+                                viewModel.addProduct(
+                                    name = productName,
+                                    productionDate = productionDate,
+                                    shelfLifeDays = shelfLifeDays.toIntOrNull(),
+                                    expiryDate = expiryDate,
+                                    reminderDaysBefore = reminderDaysBefore.toIntOrNull() ?: 3,
+                                    reminderMethod = reminderMethod
+                                )
+                            }
                             onNavigateBack()
                         }
                     }
@@ -194,7 +257,7 @@ fun AddProductScreen(
                         color = MaterialTheme.colorScheme.onPrimary
                     )
                 } else {
-                    Text("保存商品", fontSize = 16.sp)
+                    Text(if (productId != null) "更新商品" else "保存商品", fontSize = 16.sp)
                 }
             }
             

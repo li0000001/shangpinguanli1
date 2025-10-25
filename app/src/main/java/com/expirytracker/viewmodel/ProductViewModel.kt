@@ -34,7 +34,8 @@ class ProductViewModel(
         productionDate: Long?,
         shelfLifeDays: Int?,
         expiryDate: Long?,
-        reminderDaysBefore: Int
+        reminderDaysBefore: Int,
+        reminderMethod: String = "ALARM"
     ) {
         viewModelScope.launch {
             try {
@@ -57,12 +58,59 @@ class ProductViewModel(
                     productionDate = productionDate,
                     shelfLifeDays = shelfLifeDays,
                     expiryDate = finalExpiryDate,
-                    reminderDaysBefore = reminderDaysBefore
+                    reminderDaysBefore = reminderDaysBefore,
+                    reminderMethod = reminderMethod
                 )
 
                 repository.addProduct(product)
             } catch (e: Exception) {
                 _errorMessage.value = "添加商品失败: ${e.message}"
+            } finally {
+                _isLoading.value = false
+            }
+        }
+    }
+
+    fun updateProductWithDetails(
+        id: Long,
+        name: String,
+        productionDate: Long?,
+        shelfLifeDays: Int?,
+        expiryDate: Long?,
+        reminderDaysBefore: Int,
+        reminderMethod: String,
+        calendarEventId: Long?
+    ) {
+        viewModelScope.launch {
+            try {
+                _isLoading.value = true
+                _errorMessage.value = null
+
+                val finalExpiryDate = when {
+                    expiryDate != null -> expiryDate
+                    productionDate != null && shelfLifeDays != null -> 
+                        DateUtils.calculateExpiryDate(productionDate, shelfLifeDays)
+                    else -> {
+                        _errorMessage.value = "请输入有效的日期信息"
+                        _isLoading.value = false
+                        return@launch
+                    }
+                }
+
+                val product = ProductEntity(
+                    id = id,
+                    name = name,
+                    productionDate = productionDate,
+                    shelfLifeDays = shelfLifeDays,
+                    expiryDate = finalExpiryDate,
+                    reminderDaysBefore = reminderDaysBefore,
+                    reminderMethod = reminderMethod,
+                    calendarEventId = calendarEventId
+                )
+
+                repository.updateProduct(product)
+            } catch (e: Exception) {
+                _errorMessage.value = "更新商品失败: ${e.message}"
             } finally {
                 _isLoading.value = false
             }

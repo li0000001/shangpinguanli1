@@ -12,7 +12,8 @@ object CalendarHelper {
         context: Context,
         title: String,
         expiryDate: Long,
-        reminderMinutesBefore: Int
+        reminderMinutesBefore: Int,
+        reminderMethod: String = "ALARM"
     ): Long? {
         return try {
             val contentResolver: ContentResolver = context.contentResolver
@@ -33,7 +34,7 @@ object CalendarHelper {
             val eventId = uri?.lastPathSegment?.toLongOrNull()
             
             eventId?.let { id ->
-                addReminderToEvent(contentResolver, id, reminderMinutesBefore)
+                addReminderToEvent(contentResolver, id, reminderMinutesBefore, reminderMethod)
             }
             
             eventId
@@ -46,12 +47,19 @@ object CalendarHelper {
     private fun addReminderToEvent(
         contentResolver: ContentResolver,
         eventId: Long,
-        minutesBefore: Int
+        minutesBefore: Int,
+        reminderMethod: String = "ALARM"
     ) {
+        val method = when (reminderMethod) {
+            "ALARM" -> CalendarContract.Reminders.METHOD_ALARM
+            "NOTIFICATION" -> CalendarContract.Reminders.METHOD_ALERT
+            else -> CalendarContract.Reminders.METHOD_ALARM
+        }
+        
         val reminderValues = ContentValues().apply {
             put(CalendarContract.Reminders.EVENT_ID, eventId)
             put(CalendarContract.Reminders.MINUTES, minutesBefore)
-            put(CalendarContract.Reminders.METHOD, CalendarContract.Reminders.METHOD_ALERT)
+            put(CalendarContract.Reminders.METHOD, method)
         }
         contentResolver.insert(CalendarContract.Reminders.CONTENT_URI, reminderValues)
     }
