@@ -19,6 +19,7 @@ import com.expirytracker.ui.theme.*
 import com.expirytracker.utils.DateUtils
 import com.expirytracker.utils.ExpiryStatus
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun ProductCard(
     product: ProductEntity,
