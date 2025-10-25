@@ -24,7 +24,8 @@ import com.google.accompanist.permissions.rememberMultiplePermissionsState
 @Composable
 fun ProductListScreen(
     viewModel: ProductViewModel,
-    onAddProduct: () -> Unit
+    onAddProduct: () -> Unit,
+    onEditProduct: (Long) -> Unit
 ) {
     val products by viewModel.products.collectAsState()
     val isLoading by viewModel.isLoading.collectAsState()
@@ -124,6 +125,9 @@ fun ProductListScreen(
                                 onDelete = {
                                     productToDelete = product
                                     showDeleteDialog = true
+                                },
+                                onEdit = {
+                                    onEditProduct(product.id)
                                 }
                             )
                         }
